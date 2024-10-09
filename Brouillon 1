@@ -1,0 +1,16 @@
+Sub SupprimerAutresFeuilles()
+    Dim ws As Worksheet
+    Application.ScreenUpdating = False ' Pour éviter les rafraîchissements d'écran
+
+    ' Boucle sur toutes les feuilles de calcul
+    For Each ws In ThisWorkbook.Worksheets
+        ' Si la feuille n'est pas nommée "RawData", on la supprime
+        If ws.Name <> "RawData" Then
+            Application.DisplayAlerts = False ' Pour éviter les messages de confirmation
+            ws.Delete
+            Application.DisplayAlerts = True ' Réactiver les alertes
+        End If
+    Next ws
+
+    Application.ScreenUpdating = True ' Réactiver les mises à jour d'écran
+End Sub
