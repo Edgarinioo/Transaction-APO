@@ -1,0 +1,75 @@
+Sub SéparerDonnéesParLigneDeProduction()
+    Dim wsSource As Worksheet
+    Dim ws As Worksheet
+    Dim nouvelleFeuille As Worksheet
+    Dim i As Long
+    Dim nomFeuille As String
+    Dim feuilleExiste As Boolean
+    Dim listeLignes() As String
+    Dim derniereLigne As Long
+    Dim celluleValeur As String
+    Dim codeLigne As Variant ' ** Changement : déclarer codeLigne comme Variant **
+    
+    ' Initialiser la liste des lignes de production
+    listeLignes = Split("L02,L03,L04,L05,L06,L07,L08,L13,L14,L16,L18,L0A,L0B,L0C,L0D,L0E,L0F", ",")
+    
+    ' Assurez-vous que la bonne feuille source est référencée ici
+    Set wsSource = ThisWorkbook.Sheets("J0") ' Modifier le nom ici
+    
+    ' Créer les feuilles de production si elles n'existent pas déjà
+    For i = LBound(listeLignes) To UBound(listeLignes)
+        nomFeuille = listeLignes(i)
+        
+        ' Vérifier si la feuille existe déjà
+        feuilleExiste = False
+        For Each ws In ThisWorkbook.Worksheets
+            If ws.Name = nomFeuille Then
+                feuilleExiste = True
+                Exit For
+            End If
+        Next ws
+        
+        ' Si la feuille n'existe pas, la créer
+        If Not feuilleExiste Then
+            Set nouvelleFeuille = ThisWorkbook.Sheets.Add(After:=ThisWorkbook.Sheets(ThisWorkbook.Sheets.Count))
+            nouvelleFeuille.Name = nomFeuille
+            
+            ' Copier les en-têtes (ligne 1 de la feuille source vers la nouvelle feuille)
+            wsSource.Rows(1).Copy nouvelleFeuille.Rows(1)
+        End If
+    Next i
+    
+    ' Déterminer la dernière ligne avec des données dans la feuille source
+    derniereLigne = wsSource.Cells(wsSource.Rows.Count, 1).End(xlUp).Row
+    
+    ' Parcourir chaque ligne de données dans la feuille source
+    For i = 2 To derniereLigne ' Commence à la ligne 2 pour ignorer les en-têtes
+        celluleValeur = wsSource.Cells(i, 1).Value ' Récupérer la valeur de la colonne A
+        
+        ' Parcourir chaque code dans la liste des lignes de production
+        For Each codeLigne In listeLignes ' ** Changement : codeLigne est maintenant Variant **
+            ' Vérifier si la cellule contient le code de ligne de production
+            If InStr(celluleValeur, codeLigne) > 0 Then
+                ' Copier la ligne de données vers la feuille correspondante
+                Set nouvelleFeuille = ThisWorkbook.Sheets(codeLigne)
+                wsSource.Rows(i).Copy nouvelleFeuille.Rows(nouvelleFeuille.Cells(nouvelleFeuille.Rows.Count, 1).End(xlUp).Row + 1)
+                Exit For ' Sortir de la boucle une fois que la ligne est copiée
+            End If
+        Next codeLigne
+    Next i
+
+    Application.ScreenUpdating = True ' Réactiver la mise à jour de l'écran
+    MsgBox "Les données ont été séparées avec succès dans les feuilles correspondantes.", vbInformation
+End Sub
+
+' Fonction pour vérifier si une valeur existe dans un tableau
+Function IsInArray(valeur As String, tableau As Variant) As Boolean
+    Dim i As Integer
+    For i = LBound(tableau) To UBound(tableau)
+        If tableau(i) = valeur Then
+            IsInArray = True
+            Exit Function
+        End If
+    Next i
+    IsInArray = False
+End Function
