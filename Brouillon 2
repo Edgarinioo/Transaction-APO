@@ -1,0 +1,29 @@
+Sub SupprimerAutresFeuillesRenommerEtAjusterTaille()
+    Dim ws As Worksheet
+    Dim nouvelleDate As String
+    Application.ScreenUpdating = False ' Désactiver la mise à jour de l'écran
+    
+    ' Boucle pour supprimer toutes les feuilles sauf "RawData"
+    For Each ws In ThisWorkbook.Worksheets
+        If ws.Name <> "RawData" Then
+            Application.DisplayAlerts = False ' Désactiver les alertes de confirmation
+            ws.Delete
+            Application.DisplayAlerts = True ' Réactiver les alertes
+        End If
+    Next ws
+    
+    ' Renommer la feuille "RawData" avec la date du jour (format JJ-MM-AAAA)
+    nouvelleDate = Format(Date, "DD-MM-YYYY")
+    ThisWorkbook.Sheets("RawData").Name = "Données " & nouvelleDate
+    
+    ' Sélectionner la feuille renommée
+    With ThisWorkbook.Sheets("Données " & nouvelleDate)
+        ' Ajuster la largeur des colonnes (120 pixels ~ 17.14 unités Excel)
+        .Cells.Columns.ColumnWidth = 17.14
+        
+        ' Ajuster la hauteur des lignes (40 pixels ~ 53.33 unités Excel)
+        .Cells.Rows.RowHeight = 53.33
+    End With
+    
+    Application.ScreenUpdating = True ' Réactiver la mise à jour de l'écran
+End Sub
